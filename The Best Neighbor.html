@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>З Днем Народження, Бро! 🎉</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Montserrat:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0f172a;
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .title-font {
+            font-family: 'Comfortaa', cursive;
+        }
+
+        #bg-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0.4;
+        }
+
+        .bg-row {
+            position: absolute;
+            left: 0;
+            width: max-content;
+            height: 20vh;
+            display: flex;
+            will-change: transform;
+            animation: scrollLeft 80s linear infinite;
+        }
+
+            .bg-row.reverse {
+                animation-name: scrollRight;
+            }
+
+            .bg-row img {
+                height: 100%;
+                width: auto;
+                flex-shrink: 0;
+                object-fit: cover;
+                padding: 5px;
+                border-radius: 14px;
+            }
+
+        @keyframes scrollLeft {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        @keyframes scrollRight {
+            from {
+                transform: translateX(-50%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+            .btn-hover:hover {
+                transform: translateY(-3px) scale(1.02);
+                box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.5);
+            }
+
+            .btn-hover:active {
+                transform: translateY(1px) scale(0.98);
+            }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            20%, 60% {
+                transform: translateX(-8px);
+            }
+
+            40%, 80% {
+                transform: translateX(8px);
+            }
+        }
+
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes pulse-gift {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            50% {
+                transform: scale(1.08) rotate(3deg);
+            }
+        }
+
+        .gift-bounce {
+            animation: pulse-gift 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-4 sm:p-6">
+
+    <div id="bg-slideshow"></div>
+    <div class="bg-overlay"></div>
+
+    <audio id="success-audio" preload="auto" loop>
+        <source src="settings/musik/1.mp3" type="audio/mpeg">
+        <source src="file:///C:/Users/kubik/Desktop/The%20Best%20Neighbor/settings/musik/1.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+    <header id="quest-header" class="w-full max-w-2xl mx-auto mb-6 hidden fade-in relative z-10">
+        <div class="glass-card rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="w-full sm:w-auto">
+                <span class="text-xs uppercase tracking-wider text-purple-300 font-semibold block mb-1">Прогрес квесту</span>
+                <div class="flex items-center gap-3">
+                    <div class="w-full sm:w-32 bg-slate-700/50 h-3 rounded-full overflow-hidden p-0.5 border border-white/10">
+                        <div id="progress-bar" class="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <span id="progress-text" class="text-sm font-bold text-pink-300">0/7</span>
+                </div>
+            </div>
+
+            <div class="w-full sm:w-auto text-left sm:text-right">
+                <span class="text-xs uppercase tracking-wider text-purple-300 font-semibold block mb-1">Знайдені слова 🔑</span>
+                <div id="collected-words-list" class="flex flex-wrap gap-1.5 justify-start sm:justify-end">
+                    <span class="text-xs text-slate-400 italic">Слова з'являтимуться тут...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-2xl mx-auto my-auto relative z-10">
+
+        <section id="intro-screen" class="glass-card rounded-3xl p-6 sm:p-10 text-center fade-in">
+            <div class="inline-block p-4 bg-purple-500/20 rounded-full mb-6 border border-purple-500/30">
+                <span class="text-5xl sm:text-6xl animate-bounce inline-block">🎁</span>
+            </div>
+
+            <h1 class="title-font text-3xl sm:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-400 mb-4">
+                З Днем Народження, Бро! 🎉
+            </h1>
+
+            <p class="text-slate-200 text-base sm:text-lg mb-8 leading-relaxed max-w-lg mx-auto">
+                Ласкаво просимо до персонального міні-квесту! Пройди вікторину про нашу дружбу, збери всі кодові слова та склади з них секретну фразу, щоб розблокувати свій подарунок! 🚀
+            </p>
+
+            <button onclick="startQuest()" class="btn-hover w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl font-bold text-lg text-white shadow-lg shadow-purple-500/30 flex items-center justify-center gap-3 mx-auto">
+                <span>Розпочати квест</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <section id="quiz-screen" class="glass-card rounded-3xl p-6 sm:p-8 hidden">
+            <div class="flex items-center justify-between mb-4">
+                <span id="question-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/30 border border-purple-400/40 text-purple-200">
+                    Питання 1 з 7
+                </span>
+                <span class="text-xs text-slate-400"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> <span id="hint-text">Обери правильний варіант</span></span>
+            </div>
+
+            <h2 id="question-text" class="title-font text-xl sm:text-2xl font-bold text-white mb-6 min-h-[60px]">
+                Завантаження...
+            </h2>
+
+            <div id="options-container" class="grid grid-cols-1 gap-3 sm:gap-4 mb-6"></div>
+
+            <div id="quiz-feedback" class="hidden rounded-xl p-4 text-center text-sm font-semibold transition-all duration-300"></div>
+        </section>
+
+        <section id="puzzle-screen" class="glass-card rounded-3xl p-6 sm:p-8 text-center hidden fade-in">
+            <div class="inline-block p-3 bg-pink-500/20 rounded-full mb-3 border border-pink-500/30">
+                <span class="text-3xl">🧩</span>
+            </div>
+
+            <h2 class="title-font text-2xl sm:text-3xl font-bold text-white mb-2">Фінальний пазл!</h2>
+            <p class="text-slate-300 text-sm mb-6">
+                Натискай на зібрані слова у правильному порядку, щоб скласти секретну фразу:
+            </p>
+
+            <div class="mb-4">
+                <span class="text-xs text-purple-300 font-semibold uppercase block mb-2">Твої слова:</span>
+                <div id="puzzle-bank" class="flex flex-wrap justify-center gap-2 min-h-[48px] p-2 bg-slate-900/40 rounded-xl border border-white/5"></div>
+            </div>
+
+            <div class="mb-6">
+                <span class="text-xs text-pink-300 font-semibold uppercase block mb-2">Зібрана фраза:</span>
+                <div id="puzzle-result" class="flex flex-wrap justify-center items-center gap-2 min-h-[56px] p-3 bg-purple-950/40 rounded-2xl border-2 border-dashed border-purple-500/40">
+                    <span id="puzzle-placeholder" class="text-slate-500 text-sm italic">Клікай на слова вище...</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="resetPuzzle()" class="btn-hover px-4 py-3 bg-slate-700/60 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 border border-white/10">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Очистити
+                </button>
+                <button onclick="checkPuzzleAnswer()" class="btn-hover flex-1 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl font-bold text-white shadow-lg shadow-teal-500/30">
+                    <i class="fa-solid fa-key mr-2"></i> Забрати подарунок
+                </button>
+            </div>
+        </section>
+
+        <section id="gift-screen" class="glass-card rounded-3xl p-6 sm:p-10 text-center hidden fade-in">
+            <div class="relative inline-block mb-6">
+                <div class="gift-bounce cursor-pointer" onclick="triggerFireworks()">
+                    <span class="text-7xl sm:text-8xl drop-shadow-lg">🎁</span>
+                </div>
+            </div>
+
+            <h2 class="title-font text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-pink-400 to-purple-300 mb-4">
+                УРА! ТИ ЗРОБИВ ЦЕ! 🥳
+            </h2>
+
+            <div class="bg-purple-950/40 border border-purple-500/30 rounded-2xl p-5 mb-6 text-left space-y-3 text-slate-200 text-sm sm:text-base leading-relaxed">
+                <p id="gift-greeting-text"></p>
+            </div>
+
+            <div id="real-gift-container" class="p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-2xl border border-pink-500/30 mb-6">
+                <h3 class="font-bold text-pink-300 mb-1 text-sm uppercase tracking-wide">Твій справжній подарунок:</h3>
+                <p id="gift-instruction" class="text-slate-200 text-sm font-semibold mb-3"></p>
+            </div>
+
+            <button onclick="location.reload()" class="text-slate-400 text-xs hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-rotate-right mr-1"></i> Пройти квест ще раз
+            </button>
+        </section>
+
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs text-slate-500 relative z-10">
+        Створено для найкращого сусіда та друга ❤️
+    </footer>
+
+    <script>
+                const targetSecretPhrase = ["З тобою", "Кожна", "Наша", "Зустріч", "Перетворюється", "На", "Пригоду"];
+                let unassignedWords = [...targetSecretPhrase];
+
+                const quizData = [
+                    {
+                        question: "1. Давай перевіримо наскільки ти хороший друг. В кого наступний день народження?",
+                        options: ["Віка Булейко", "Кубик Максім", "Дулепова Дарина", "Віка Венгер"],
+                        correct: "Кубик Максім",
+                        rewardMessage: "Непогано для початку! Перше слово розблоковано!"
+                    },
+                    {
+                        question: "2. Тобі пощастило з першим питанням, давай друге більш важке: хто просив за Дарину бали в коменди?",
+                        options: ["Кубик", "Халанич", "Дулепова", "Курилюк"],
+                        correct: "Халанич",
+                        rewardMessage: "Точно! Друге слово у твоєму арсеналі!"
+                    },
+                    {
+                        question: "3. Хуя ти мощний, ну на це питання ти точно не зможеш дати відповідь: скільки в тебе телефонів?",
+                        options: ["1", "3", "2", "4"],
+                        correct: "3",
+                        rewardMessage: "Ого, а ти й справді знаєш! Третє слово відкрите!"
+                    },
+                    {
+                        question: "4. Ладно, щастить тобі, раз ти вже на цьому питанні: яка твоя коронна фраза?",
+                        options: ["Тудам сюдам", "Тутка тамка", "Трах тібідох", "Тяп-ляп"],
+                        correct: "Тутка тамка",
+                        rewardMessage: "Класика! Четверте слово твоє!"
+                    },
+                    {
+                        type: "input",
+                        question: "5. Ну ти мощно це робиш, а що ти думав, питання будуть простими? Підійди до 104 кімнати і взнай таємне слово 🕵️",
+                        answer: "рівний",
+                        rewardMessage: "Таємне слово знайдено! П'яте слово у кишені!"
+                    },
+                    {
+                        question: "6. Найважче питання, яке тільки може бути: в який останній ресторан, бар, кафе ходили разом? 🍻",
+                        options: ["Три богатирі", "Файне місто", "Три миколи", "Шинок"],
+                        correct: "Три миколи",
+                        rewardMessage: "Пам'ять на місці! Шосте слово розблоковано!"
+                    },
+                    {
+                        question: "7. Ну це останнє питання, воно має бути дуже важке: чим тебе пиздили Дарина і Аня, коли ти не почекав їх на своє день народження минулого року?",
+                        options: ["Рушником", "Футболкою", "Шваброю", "Вербовими котиками"],
+                        correct: "Футболкою",
+                        rewardMessage: "Боляче, але правильно! Останнє слово зібрано!"
+                    }
+                ];
+
+                const giftGreeting = `З Днем Народження, бро! 🎂🎉<br><br>Дякую тобі за всі наші спільні пригоди, підтримку, сусідські посиденьки та щирий сміх. Бажаю тобі міцного здоров'я, бешкетного настрою, здійснення найамбітніших мрій та купу кешу! Нехай кожен день приносить кайф! 🔥`;
+                const giftInstructionText = "Твій справжній подарунок чекає на тебе! Зазирни у кімнату або спитай у мене особисто! 🎁";
+
+                let currentQuestionIndex = 0;
+                let collectedWords = [];
+                let selectedPuzzleWords = [];
+                let shuffledBankWords = [];
+
+                function initBackgroundSlideshow() {
+                    const container = document.getElementById('bg-slideshow');
+                    const totalPhotos = 21;
+                    const totalRows = 5;
+
+                    function shuffle(arr) {
+                        const a = [...arr];
+                        for (let i = a.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [a[i], a[j]] = [a[j], a[i]];
+                        }
+                        return a;
+                    }
+
+                    function createPhoto(i) {
+                        const img = document.createElement('img');
+                        img.src = `settings/photo/${i}.jpg`;
+                        img.onerror = () => {
+                            img.onerror = null;
+                            img.src = `file:///C:/Users/kubik/Desktop/The%20Best%20Neighbor/settings/photo/${i}.jpg`;
+                        };
+                        return img;
+                    }
+
+                    const numbers = Array.from({ length: totalPhotos }, (_, k) => k + 1);
+
+                    for (let r = 0; r < totalRows; r++) {
+                        const row = document.createElement('div');
+                        row.className = 'bg-row' + (r % 2 === 1 ? ' reverse' : '');
+                        row.style.top = `${r * 20}vh`;
+                        row.style.animationDuration = `${70 + r * 8}s`;
+
+                        const order = shuffle(numbers);
+                        for (let copy = 0; copy < 2; copy++) {
+                            order.forEach(i => row.appendChild(createPhoto(i)));
+                        }
+
+                        container.appendChild(row);
+                    }
+                }
+
+                function playAudio() {
+                    const audio = document.getElementById('success-audio');
+                    if (audio && audio.paused) {
+                        audio.loop = true;
+                        audio.play().catch(() => {});
+                    }
+                }
+
+                function startQuest() {
+                    document.getElementById('intro-screen').classList.add('hidden');
+                    document.getElementById('quest-header').classList.remove('hidden');
+                    document.getElementById('quiz-screen').classList.remove('hidden');
+                    document.getElementById('quiz-screen').classList.add('fade-in');
+
+                    confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
+                    loadQuestion();
+                }
+
+                function loadQuestion() {
+                    const data = quizData[currentQuestionIndex];
+
+                    document.getElementById('question-badge').innerText = `Питання ${currentQuestionIndex + 1} з ${quizData.length}`;
+                    const progressPercent = (currentQuestionIndex / quizData.length) * 100;
+                    document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+                    document.getElementById('progress-text').innerText = `${currentQuestionIndex}/${quizData.length}`;
+
+                    document.getElementById('question-text').innerText = data.question;
+                    document.getElementById('hint-text').innerText = data.type === 'input' ? 'Введи таємне слово' : 'Обери правильний варіант';
+
+                    const feedbackEl = document.getElementById('quiz-feedback');
+                    feedbackEl.className = "hidden rounded-xl p-4 text-center text-sm font-semibold transition-all duration-300";
+
+                    const optionsContainer = document.getElementById('options-container');
+                    optionsContainer.innerHTML = '';
+
+                    if (data.type === 'input') {
+                        const input = document.createElement('input');
+                        input.id = 'secret-input';
+                        input.type = 'text';
+                        input.autocomplete = 'off';
+                        input.placeholder = 'Таємне слово...';
+                        input.className = 'w-full p-4 rounded-2xl glass-pill font-medium text-slate-100 border border-white/10 focus:border-purple-400/60 outline-none placeholder-slate-400';
+                        input.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') checkSecretWord();
+                        });
+
+                        const submit = document.createElement('button');
+                        submit.id = 'secret-submit';
+                        submit.className = 'btn-hover w-full py-3.5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl font-bold text-white shadow-lg shadow-purple-500/30';
+                        submit.innerHTML = '<i class="fa-solid fa-key mr-2"></i> Перевірити';
+                        submit.onclick = checkSecretWord;
+
+                        optionsContainer.appendChild(input);
+                        optionsContainer.appendChild(submit);
+                        setTimeout(() => input.focus(), 100);
+                        return;
+                    }
+
+                    const options = data.options.map(text => ({ text, isCorrect: text === data.correct }));
+                    for (let i = options.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [options[i], options[j]] = [options[j], options[i]];
+                    }
+
+                    options.forEach((opt) => {
+                        const btn = document.createElement('button');
+                        btn.className = `btn-hover w-full text-left p-4 rounded-2xl glass-pill font-medium text-slate-100 flex items-center justify-between border border-white/10 hover:border-purple-400/50 transition-all`;
+                        btn.onclick = () => checkAnswer(opt.isCorrect, btn);
+
+                        btn.innerHTML = `
+                            <span>${opt.text}</span>
+                            <i class="fa-regular fa-circle text-slate-400 text-sm"></i>
+                        `;
+                        optionsContainer.appendChild(btn);
+                    });
+                }
+
+                function awardWord(data) {
+                    const feedbackEl = document.getElementById('quiz-feedback');
+
+                    const randomIndex = Math.floor(Math.random() * unassignedWords.length);
+                    const assignedWord = unassignedWords.splice(randomIndex, 1)[0];
+                    collectedWords.push(assignedWord);
+                    updateCollectedWordsUI();
+
+                    confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+
+                    feedbackEl.innerHTML = `
+                        <p class="text-emerald-300 font-bold mb-1">✨ Правильно! Отримано слово: <span class="text-yellow-300 underline font-extrabold text-base">"${assignedWord}"</span></p>
+                        <p class="text-slate-300 text-xs">${data.rewardMessage}</p>
+                    `;
+                    feedbackEl.className = "rounded-xl p-3 text-center text-sm font-semibold bg-emerald-950/60 border border-emerald-500/40 fade-in block mt-4";
+
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex < quizData.length) {
+                            loadQuestion();
+                        } else {
+                            finishQuiz();
+                        }
+                    }, 2000);
+                }
+
+                function showWrong() {
+                    const feedbackEl = document.getElementById('quiz-feedback');
+                    feedbackEl.innerHTML = `
+                        <p class="text-rose-300"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Незовсім так! Спробуй ще раз 😉</p>
+                    `;
+                    feedbackEl.className = "rounded-xl p-3 text-center text-sm font-semibold bg-rose-950/60 border border-rose-500/40 fade-in block mt-4";
+                }
+
+                function checkAnswer(isCorrect, btnElement) {
+                    const data = quizData[currentQuestionIndex];
+                    const allButtons = document.querySelectorAll('#options-container button');
+
+                    allButtons.forEach(b => b.style.pointerEvents = 'none');
+
+                    if (isCorrect) {
+                        btnElement.classList.remove('glass-pill');
+                        btnElement.classList.add('bg-emerald-500/30', 'border-emerald-400', 'text-emerald-200');
+                        btnElement.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400 text-base';
+                        awardWord(data);
+                    } else {
+                        btnElement.classList.remove('glass-pill');
+                        btnElement.classList.add('bg-rose-500/30', 'border-rose-400', 'text-rose-200', 'animate-shake');
+                        btnElement.querySelector('i').className = 'fa-solid fa-circle-xmark text-rose-400 text-base';
+                        showWrong();
+
+                        setTimeout(() => {
+                            btnElement.classList.remove('animate-shake');
+                            allButtons.forEach(b => b.style.pointerEvents = 'auto');
+                        }, 800);
+                    }
+                }
+
+                function checkSecretWord() {
+                    const data = quizData[currentQuestionIndex];
+                    const input = document.getElementById('secret-input');
+                    const submit = document.getElementById('secret-submit');
+                    if (!input || input.disabled) return;
+
+                    const normalize = (str) => str.trim().toLowerCase().replace(/i/g, 'і').replace(/ї/g, 'і');
+                    const typed = normalize(input.value);
+
+                    if (typed === normalize(data.answer)) {
+                        input.disabled = true;
+                        submit.style.pointerEvents = 'none';
+                        input.classList.add('border-emerald-400', 'text-emerald-200');
+                        awardWord(data);
+                    } else {
+                        input.classList.add('animate-shake', 'border-rose-400');
+                        showWrong();
+                        setTimeout(() => {
+                            input.classList.remove('animate-shake', 'border-rose-400');
+                        }, 800);
+                    }
+                }
+
+                function updateCollectedWordsUI() {
+                    const listContainer = document.getElementById('collected-words-list');
+                    listContainer.innerHTML = '';
+                    collectedWords.forEach(word => {
+                        const badge = document.createElement('span');
+                        badge.className = 'px-2.5 py-1 rounded-lg bg-purple-500/30 border border-purple-400/40 text-xs font-bold text-yellow-300 fade-in';
+                        badge.innerText = word;
+                        listContainer.appendChild(badge);
+                    });
+                }
+
+                function finishQuiz() {
+                    document.getElementById('progress-bar').style.width = '100%';
+                    document.getElementById('progress-text').innerText = `${quizData.length}/${quizData.length}`;
+
+                    document.getElementById('quiz-screen').classList.add('hidden');
+                    document.getElementById('puzzle-screen').classList.remove('hidden');
+
+                    shuffledBankWords = [...collectedWords].sort(() => Math.random() - 0.5);
+                    renderPuzzle();
+                }
+
+                function renderPuzzle() {
+                    const bankContainer = document.getElementById('puzzle-bank');
+                    const resultContainer = document.getElementById('puzzle-result');
+
+                    bankContainer.innerHTML = '';
+                    resultContainer.innerHTML = '';
+
+                    shuffledBankWords.forEach((word, index) => {
+                        if (!selectedPuzzleWords.includes(index)) {
+                            const btn = document.createElement('button');
+                            btn.className = 'btn-hover px-3.5 py-2 bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/50 rounded-xl font-bold text-sm text-purple-100 shadow-sm';
+                            btn.innerText = word;
+                            btn.onclick = () => selectWord(index);
+                            bankContainer.appendChild(btn);
+                        }
+                    });
+
+                    if (selectedPuzzleWords.length === 0) {
+                        resultContainer.innerHTML = '<span id="puzzle-placeholder" class="text-slate-500 text-sm italic">Клікай на слова вище...</span>';
+                    } else {
+                        selectedPuzzleWords.forEach((bankIdx) => {
+                            const btn = document.createElement('button');
+                            btn.className = 'btn-hover px-3.5 py-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl font-bold text-sm text-white shadow-md flex items-center gap-1.5';
+                            btn.innerHTML = `<span>${shuffledBankWords[bankIdx]}</span> <i class="fa-solid fa-xmark text-xs opacity-70"></i>`;
+                            btn.onclick = () => deselectWord(bankIdx);
+                            resultContainer.appendChild(btn);
+                        });
+                    }
+                }
+
+                function selectWord(bankIndex) {
+                    selectedPuzzleWords.push(bankIndex);
+                    renderPuzzle();
+                }
+
+                function deselectWord(bankIndex) {
+                    selectedPuzzleWords = selectedPuzzleWords.filter(idx => idx !== bankIndex);
+                    renderPuzzle();
+                }
+
+                function resetPuzzle() {
+                    selectedPuzzleWords = [];
+                    renderPuzzle();
+                }
+
+                function checkPuzzleAnswer() {
+                    const userPhrase = selectedPuzzleWords.map(idx => shuffledBankWords[idx]);
+                    const isCorrect = userPhrase.length === targetSecretPhrase.length &&
+                                      userPhrase.every((val, index) => val === targetSecretPhrase[index]);
+
+                    if (isCorrect) {
+                        document.getElementById('puzzle-screen').classList.add('hidden');
+                        document.getElementById('quest-header').classList.add('hidden');
+                        document.getElementById('gift-screen').classList.remove('hidden');
+
+                        document.getElementById('gift-greeting-text').innerHTML = giftGreeting;
+                        document.getElementById('gift-instruction').innerText = giftInstructionText;
+
+                        playAudio();
+                        triggerFireworks();
+                    } else {
+                        showToast("Порядок слів невірний! Спробуй ще раз 🤔", "error");
+                    }
+                }
+
+                function triggerFireworks() {
+                    const duration = 3.5 * 1000;
+                    const animationEnd = Date.now() + duration;
+                    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10 };
+
+                    function randomInRange(min, max) {
+                        return Math.random() * (max - min) + min;
+                    }
+
+                    const interval = setInterval(function() {
+                        const timeLeft = animationEnd - Date.now();
+
+                        if (timeLeft <= 0) {
+                            return clearInterval(interval);
+                        }
+
+                        const particleCount = 50 * (timeLeft / duration);
+
+                        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                    }, 250);
+                }
+
+                function showToast(message, type = "info") {
+                    const container = document.getElementById('toast-container');
+                    const toast = document.createElement('div');
+
+                    const bgColor = type === "error" ? "bg-rose-900/90 border-rose-500 text-rose-100" : "bg-purple-900/90 border-purple-500 text-purple-100";
+
+                    toast.className = `p-3.5 rounded-xl border backdrop-blur-md shadow-lg text-xs sm:text-sm font-semibold flex items-center justify-between gap-2 fade-in ${bgColor} pointer-events-auto`;
+                    toast.innerHTML = `
+                        <span>${message}</span>
+                        <button onclick="this.parentElement.remove()" class="text-white/60 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                    `;
+
+                    container.appendChild(toast);
+
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 3500);
+                }
+
+                window.onload = () => {
+                    initBackgroundSlideshow();
+                };
+    </script>
+</body>
+</html>
